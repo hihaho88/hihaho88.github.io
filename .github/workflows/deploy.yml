@@ -1,0 +1,31 @@
+name: Webstudio automatisch naar GitHub Pages
+on:
+  schedule:
+    - cron: '0 * * * *' # Controleert elk uur automatisch op nieuwe Webstudio wijzigingen
+  workflow_dispatch:    # Geeft je ook een handmatige "Nu updaten" knop op GitHub
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Haal Webstudio project op en bouw
+        run: npx webstudio@latest build --project 21f6f3ca-cbbe-46e3-9f4f-2e81c841d182 --template ssg
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
